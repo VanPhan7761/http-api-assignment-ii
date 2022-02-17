@@ -52,29 +52,38 @@ const parseBody = (request, response, handler) => {
 };
 
 
+// const urlStruct = {
+//     '/': htmlHandler.getIndex,
+//     '/favicon.ico': htmlHandler.getFavicon,
+//     '/style.css': htmlHandler.getCSS,
+//     '/client.js': htmlHandler.getClientJS,
+//     '/getUsers':jsonHandler.getUsers,
+// };
+
 const urlStruct = {
-    '/': htmlHandler.getIndex,
-    '/favicon.ico': htmlHandler.getFavicon,
-    '/style.css': htmlHandler.getCSS,
-    '/client.js': htmlHandler.getClientJS,
-    '/getUsers':jsonHandler.getUsers,
+    'GET': {
+        '/': htmlHandler.getIndex,
+        '/style.css': htmlHandler.getCSS,
+        '/favicon.ico': htmlHandler.getFavicon,
+        '/client.js': htmlHandler.getClientJS,
+        '/getUsers': jsonHandler.getUsers,
+        '/updateUser': jsonHandler.updateUser,
+        notFound: jsonHandler.notFound,
+    },
+    'HEAD': {
+        '/getUsers': jsonHandler.getUsersMeta,
+        notFound: jsonHandler.notFoundMeta,
+    },
 };
 
 //handle GET requests
 const handleGet = (request, response, parsedUrl) => {
 
-    //runs request based off the url struct
-    if (urlStruct[parsedUrl.pathname]) {
-        urlStruct[parsedUrl.pathname](request, response);
+    if (urlStruct[request.method][parsedUrl.pathname]) {
+        urlStruct[request.method][parsedUrl.pathname](request, response);
+    } else {
+        urlStruct[request.method].notFound(request, response);
     }
-
-    // if (parsedUrl.pathname === '/style.css') {
-    //     htmlHandler.getCSS(request, response);
-    // } else if (parsedUrl.pathname === '/getUsers') {
-    //     jsonHandler.getUsers(request, response);
-    // } else {
-    //     htmlHandler.getIndex(request, response);
-    // }
 }
 
 //handles the http request from our server
