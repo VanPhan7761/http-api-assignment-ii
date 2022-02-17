@@ -8,18 +8,6 @@ const jsonHandler = require('./jsonResponses.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-//handle POST requests
-const handlePost = (request, response, parsedUrl) => {
-
-    //If they go to /addUser
-    if (parsedUrl.pathname === '/addUser') {
-
-        //Call our below parseBody handler, and in turn pass in the
-        //jsonHandler.addUser function as the handler callback function.
-        parseBody(request, response, jsonHandler.addUser);
-    }
-};
-
 const parseBody = (request, response, handler) => {
 
     //The request will come in in pieces. We will store those pieces in this
@@ -51,14 +39,18 @@ const parseBody = (request, response, handler) => {
     });
 };
 
+//handle POST requests
+const handlePost = (request, response, parsedUrl) => {
 
-// const urlStruct = {
-//     '/': htmlHandler.getIndex,
-//     '/favicon.ico': htmlHandler.getFavicon,
-//     '/style.css': htmlHandler.getCSS,
-//     '/client.js': htmlHandler.getClientJS,
-//     '/getUsers':jsonHandler.getUsers,
-// };
+    //If they go to /addUser
+    if (parsedUrl.pathname === '/addUser') {
+
+        //Call our below parseBody handler, and in turn pass in the
+        //jsonHandler.addUser function as the handler callback function.
+        parseBody(request, response, jsonHandler.addUser);
+    }
+};
+
 
 const urlStruct = {
     'GET': {
