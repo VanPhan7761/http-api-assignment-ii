@@ -9,95 +9,90 @@ const jsonHandler = require('./jsonResponses.js');
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const parseBody = (request, response, handler) => {
+  // The request will come in in pieces. We will store those pieces in this
+  // body array.
+  const body = [];
 
-    //The request will come in in pieces. We will store those pieces in this
-    //body array.
-    const body = [];
+  // if we experience an error w/ requests
+  request.on('error', (err) => {
+    console.dir(err);
+    response.statusCode = 400;
+    response.end();
+  });
 
-    //if we experience an error w/ requests
-    request.on('error', (err) => {
-        console.dir(err);
-        response.statusCode = 400;
-        response.end();
-    });
+  // The second possible event is the "data" event. This gets fired when we
+  // get a piece (or "chunk") of the body. Each time we do, we will put it in
+  // the array. We will always recieve these chunks in the correct order.
+  request.on('data', (chunk) => {
+    body.push(chunk);
+  });
 
-    //The second possible event is the "data" event. This gets fired when we
-    //get a piece (or "chunk") of the body. Each time we do, we will put it in
-    //the array. We will always recieve these chunks in the correct order.
-    request.on('data', (chunk) => {
-        body.push(chunk);
-    });
+  // when our request ends
+  request.on('end', () => {
+    const bodyString = Buffer.concat(body).toString();
+    const bodyParams = query.parse(bodyString);
 
-    //when our request ends
-    request.on('end', () => {
-        const bodyString = Buffer.concat(body).toString();
-        const bodyParams = query.parse(bodyString);
-
-        //Once we have the bodyParams object, we will call the handler function. We then
-        //proceed much like we would with a GET request.
-        handler(request, response, bodyParams);
-    });
+    // Once we have the bodyParams object, we will call the handler function. We then
+    // proceed much like we would with a GET request.
+    handler(request, response, bodyParams);
+  });
 };
 
-//handle POST requests
+// handle POST requests
 const handlePost = (request, response, parsedUrl) => {
-
-    //If they go to /addUser
-    if (parsedUrl.pathname === '/addUser') {
-
-        //Call our below parseBody handler, and in turn pass in the
-        //jsonHandler.addUser function as the handler callback function.
-        parseBody(request, response, jsonHandler.addUser);
-    }
+  // If they go to /addUser
+  if (parsedUrl.pathname === '/addUser') {
+    // Call our below parseBody handler, and in turn pass in the
+    // jsonHandler.addUser function as the handler callback function.
+    parseBody(request, response, jsonHandler.addUser);
+  }
 };
-
 
 const urlStruct = {
-    'GET': {
-        '/': htmlHandler.getIndex,
-        '/style.css': htmlHandler.getCSS,
-        '/favicon.ico': htmlHandler.getFavicon,
-        '/client.js': htmlHandler.getClientJS,
-        '/getUsers': jsonHandler.getUsers,
-        '/updateUser': jsonHandler.updateUser,
-        notFound: jsonHandler.notFound,
-    },
-    'HEAD': {
-        '/getUsers': jsonHandler.getUsersMeta,
-        notFound: jsonHandler.notFoundMeta,
-    },
+  GET: {
+    '/': htmlHandler.getIndex,
+    '/style.css': htmlHandler.getCSS,
+    '/favicon.ico': htmlHandler.getFavicon,
+    '/client.js': htmlHandler.getClientJS,
+    '/getUsers': jsonHandler.getUsers,
+    '/updateUser': jsonHandler.updateUser,
+    notFound: jsonHandler.notFound,
+  },
+  HEAD: {
+    '/getUsers': jsonHandler.getUsersMeta,
+    notFound: jsonHandler.notFoundMeta,
+  },
 };
 
-//handle GET requests
+// handle GET requests
 const handleGet = (request, response, parsedUrl) => {
+  if (urlStruct[request.method][parsedUrl.pathname]) {
+    urlStruct[request.method][parsedUrl.pathname](request, response);
+  } else {
+    urlStruct[request.method].notFound(request, response);
+  }
+};
 
-    if (urlStruct[request.method][parsedUrl.pathname]) {
-        urlStruct[request.method][parsedUrl.pathname](request, response);
-    } else {
-        urlStruct[request.method].notFound(request, response);
-    }
-}
-
-//handles the http request from our server
+// handles the http request from our server
 
 const onRequest = (request, response) => {
-    //parse url into individual parts
-    //returns an object of url parts by name
-    const parsedUrl = url.parse(request.url);
+  // parse url into individual parts
+  // returns an object of url parts by name
+  const parsedUrl = url.parse(request.url);
 
-    //const params = query.parse(parsedUrl.query);
+  // const params = query.parse(parsedUrl.query);
 
-    //const acceptedTypes = request.headers.accept.split(',');
-    //check if method was POST, otherwise assume GET 
-    //for the sake of this example
-    if (request.method === 'POST') {
-        handlePost(request, response, parsedUrl);
-    } else {
-        handleGet(request, response, parsedUrl);
-    }
+  // const acceptedTypes = request.headers.accept.split(',');
+  // check if method was POST, otherwise assume GET
+  // for the sake of this example
+  if (request.method === 'POST') {
+    handlePost(request, response, parsedUrl);
+  } else {
+    handleGet(request, response, parsedUrl);
+  }
 };
 
-//starts the server and then logs when our server is listening for request
+// starts the server and then logs when our server is listening for request
 http.createServer(onRequest).listen(port, () => {
-    console.log(`Listening on 127.0.0.1:${port}`);
+  console.log(`Listening on 127.0.0.1:${port}`);
 });

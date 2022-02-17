@@ -11,14 +11,14 @@ const getIndex = (request, response) => {
   response.end();
 };
 
-//function to get css page
+// function to get css page
 const getCSS = (request, response) => {
-    response.writeHead(200, { 'Content-Type': 'text/css' });
-    response.write(css);
-    response.end();
-  };
+  response.writeHead(200, { 'Content-Type': 'text/css' });
+  response.write(css);
+  response.end();
+};
 
-  //function to get css page
+// function to get css page
 const getFavicon = (request, response) => {
   response.writeHead(200, { 'Content-Type': 'image/x-icon' });
   response.write(favicon);
@@ -31,9 +31,9 @@ const getClientJS = (request, response) => {
   response.end();
 };
 
-  module.exports = {
-    getIndex,
-    getCSS,
-    getFavicon,
-    getClientJS,
-  };
+module.exports = {
+  getIndex,
+  getCSS,
+  getFavicon,
+  getClientJS,
+};
